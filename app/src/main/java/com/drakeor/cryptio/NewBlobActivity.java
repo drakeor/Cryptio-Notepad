@@ -71,29 +71,18 @@ public class NewBlobActivity extends ActionBarActivity {
         EncryptionManager encryptionManager = new EncryptionManager(getFilesDir());
 
         if(password1.getText().toString().equals(password2.getText().toString())) {
-            try {
-                // Generate a secure salt and write it into our salt file.
-                encryptionManager.generateNewSaltFile();
-                byte[] salt = encryptionManager.getSalt();
+            // Generate a secure salt and write it into our salt file.
+            encryptionManager.generateNewSaltFile();
+            byte[] salt = encryptionManager.getSalt();
 
-                // Create our final password
-                byte[] finalPasswordHash = encryptionManager.getPasswordHash(password1.getText().toString().getBytes());
+            // Create our final password
+            byte[] finalPasswordHash = encryptionManager.getPasswordHash(password1.getText().toString().getBytes());
 
-                // Write the hash to the file
-                File file = new File(encryptionManager.blobFilename);
-                FileOutputStream fileOutputStream = new FileOutputStream(file, false);
-                fileOutputStream.write(finalPasswordHash,0,32);
-                fileOutputStream.close();
+            // Write the hash to the file
+            encryptionManager.newBlobFile(finalPasswordHash);
 
-                // End our activity
-                finish();
-
-            // Handle errors
-            } catch(FileNotFoundException e) {
-                e.printStackTrace();
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
+            // End our activity
+            finish();
 
         } else {
             // Display an error message to the user

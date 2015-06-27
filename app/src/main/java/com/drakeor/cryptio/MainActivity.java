@@ -23,6 +23,7 @@ import java.util.Arrays;
 public class MainActivity extends ActionBarActivity {
 
     public final static String EXTRA_PASSWORD = "com.drakeor.cryptio.PASSWORD";
+    public final static String EXTRA_PASSWORDHASH = "com.drakeor.cryptio.PASSWORD_HASH";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -30,10 +31,10 @@ public class MainActivity extends ActionBarActivity {
         setContentView(R.layout.activity_main);
 
         // FOR TESTING PURPOSES ONLY
-        String filename = getFilesDir() + "/cryptio.blob";
+       /* String filename = getFilesDir() + "/cryptio.blob";
         File file = new File(filename);
         if(file.exists())
-            file.delete();
+            file.delete();*/
     }
 
 
@@ -68,8 +69,9 @@ public class MainActivity extends ActionBarActivity {
         EditText passwordText = (EditText) findViewById(R.id.password_text);
         TextView passwordStatus = (TextView) findViewById(R.id.passwordStatus);
         EncryptionManager encryptionManager = new EncryptionManager(getFilesDir());
+        File blobFile = new File(encryptionManager.blobFilename);
 
-        try {
+        if(blobFile.exists()) {
             // Grab our salt
             byte salt[] = encryptionManager.getSalt();
 
@@ -78,25 +80,30 @@ public class MainActivity extends ActionBarActivity {
             byte[] finalPasswordHash = encryptionManager.getPasswordHash(passwordText.getText().toString().getBytes());
 
             // Retrieve the raw data of the file
-            File file = new File(encryptionManager.blobFilename);
-            FileInputStream fileInputStream = new FileInputStream(file);
-            byte[] bytes = new byte[(int)file.length()];
-
-            // Grab the first 32 bytes of the file for comparison
-            BufferedInputStream bufferedInputStream = new BufferedInputStream(fileInputStream);
-            bufferedInputStream.read(bytes,0,32);
-            bufferedInputStream.close();
+            byte[] bytes = encryptionManager.getBlobFile(finalPasswordHash);
             System.out.println("HASH: " + encryptionManager.byteToHex(bytes));
 
-            // Lets just compare the passwords
-            if(Arrays.equals(bytes, finalPasswordHash)) {
-                passwordStatus.setText("Your password was correct!");
-            } else {
+            if(bytes.length < 33) {
                 passwordStatus.setText("The password was incorrect!");
+            } else {
+                byte[] passwordHash = Arrays.copyOfRange(bytes, 0, 32);
+                // Lets just compare the passwords
+                if(Arrays.equals(passwordHash, finalPasswordHash)) {
+                    passwordStatus.setText("Your password was correct!");
+
+                    // We want to clear out our password.. security things y'know.
+                    passwordText.setText("");
+
+                    // Redirect the user to the edit file page!
+                    Intent intent = new Intent(this, NotepadActivity.class);
+                    intent.putExtra(EXTRA_PASSWORDHASH, finalPasswordHash);
+                    startActivity(intent);
+
+                } else {
+                    passwordStatus.setText("The password was incorrect!");
+                }
             }
-
-
-        } catch(FileNotFoundException e) {
+        } else {
 
             // We couldn't find the blob file!
             System.out.println("Blob file does not exist! Redirecting user to create new blob file.");
@@ -107,11 +114,6 @@ public class MainActivity extends ActionBarActivity {
             intent.putExtra(EXTRA_PASSWORD, requestedPassword);
             startActivity(intent);
 
-            e.printStackTrace();
-
-        } catch(IOException e) {
-            e.printStackTrace();
         }
-
     }
 }

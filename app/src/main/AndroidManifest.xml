@@ -29,6 +29,10 @@
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value="com.drakeor.cryptio.MainActivity" />
         </activity>
+        <activity
+            android:name=".NotepadActivity"
+            android:label="@string/title_activity_notepad" >
+        </activity>
     </application>
 
 </manifest>

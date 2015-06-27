@@ -11,6 +11,7 @@ import android.view.View;
 import android.widget.EditText;
 import android.widget.TextView;
 
+import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -21,7 +22,9 @@ import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
 
+import javax.crypto.BadPaddingException;
 import javax.crypto.Cipher;
+import javax.crypto.IllegalBlockSizeException;
 import javax.crypto.NoSuchPaddingException;
 import javax.crypto.spec.SecretKeySpec;
 
@@ -144,7 +147,79 @@ public class EncryptionManager {
      * @return A null array if the decryption key was incorrect. Decrypted contents if it was correct.
      */
     public byte[] getBlobFile(byte[] passwordHash) {
+
+        try {
+            // Retrieve the raw data of the file
+            File file = new File(blobFilename);
+            FileInputStream fileInputStream = new FileInputStream(file);
+            byte[] bytes = new byte[(int)file.length()];
+            BufferedInputStream bufferedInputStream = new BufferedInputStream(fileInputStream);
+            bufferedInputStream.read(bytes);
+            bufferedInputStream.close();
+
+            // Decrypt the file
+            SecretKeySpec secretKeySpec = new SecretKeySpec(passwordHash, "AES");
+            Cipher cipher = Cipher.getInstance("AES");
+            cipher.init(Cipher.DECRYPT_MODE, secretKeySpec);
+            byte[] decryptedData = cipher.doFinal(bytes);
+            System.out.println("BAK: " + byteToHex(decryptedData));
+            return decryptedData;
+
+        } catch (InvalidKeyException e) {
+            e.printStackTrace();
+        } catch (IllegalBlockSizeException e) {
+            e.printStackTrace();
+        } catch (BadPaddingException e) {
+            e.printStackTrace();
+        } catch (NoSuchAlgorithmException e) {
+            e.printStackTrace();
+        } catch (NoSuchPaddingException e) {
+            e.printStackTrace();
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
         return new byte[0];
+    }
+
+    public void saveBlobFile(byte[] passwordHash, byte[] newText) {
+
+        // Combine our passwordhash and new text
+        byte[] content = new byte[passwordHash.length + newText.length];
+        System.arraycopy(passwordHash, 0, content, 0, passwordHash.length);
+        System.arraycopy(newText, 0, content, passwordHash.length, newText.length);
+
+        // Encrypt the file!
+        SecretKeySpec secretKeySpec = new SecretKeySpec(passwordHash, "AES");
+        try {
+            Cipher cipher = Cipher.getInstance("AES");
+            cipher.init(Cipher.ENCRYPT_MODE, secretKeySpec);
+            byte[] encryptedBlob = cipher.doFinal(content);
+
+            // Write our new blob file!
+            File blobFile = new File(blobFilename);
+            FileOutputStream saltFileStream = new FileOutputStream(blobFile, false);
+            saltFileStream.write(encryptedBlob);
+            saltFileStream.close();
+
+        } catch (IllegalBlockSizeException e) {
+            e.printStackTrace();
+        } catch (InvalidKeyException e) {
+            e.printStackTrace();
+        } catch (BadPaddingException e) {
+            e.printStackTrace();
+        } catch (NoSuchAlgorithmException e) {
+            e.printStackTrace();
+        } catch (NoSuchPaddingException e) {
+            e.printStackTrace();
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
     }
 
     /**
@@ -154,18 +229,42 @@ public class EncryptionManager {
     public void newBlobFile(byte[] passwordHash) {
 
         // Make some example text for our file!
-        
+        String exampleText = new String("Example text here!");
+        byte[] exampleBytes = exampleText.getBytes();
+        byte[] content = new byte[passwordHash.length + exampleBytes.length];
+        System.arraycopy(passwordHash, 0, content, 0, passwordHash.length);
+        System.arraycopy(exampleBytes, 0, content, passwordHash.length, exampleBytes.length);
 
         SecretKeySpec secretKeySpec = new SecretKeySpec(passwordHash, "AES");
         try {
+
             Cipher cipher = Cipher.getInstance("AES");
             cipher.init(Cipher.ENCRYPT_MODE, secretKeySpec);
-            byte[] encryptedBlob = cipher.doFinal()
+            byte[] encryptedBlob = cipher.doFinal(content);
+            System.out.println("OLD: " + byteToHex(content));
+            System.out.println("NEW: " + byteToHex(encryptedBlob));
+
+           /* Cipher cipher2 = Cipher.getInstance("AES");
+            cipher2.init(Cipher.DECRYPT_MODE, secretKeySpec);
+            byte[] decryptedData = cipher2.doFinal(encryptedBlob);
+            System.out.println("BAK: " + byteToHex(decryptedData));*/
+
+            File blobFile = new File(blobFilename);
+            FileOutputStream saltFileStream = new FileOutputStream(blobFile, false);
+            saltFileStream.write(encryptedBlob);
+            saltFileStream.close();
+
         } catch (NoSuchAlgorithmException e) {
             e.printStackTrace();
         } catch (NoSuchPaddingException e) {
             e.printStackTrace();
         } catch (InvalidKeyException e) {
+            e.printStackTrace();
+        } catch (BadPaddingException e) {
+            e.printStackTrace();
+        } catch (IllegalBlockSizeException e) {
+            e.printStackTrace();
+        } catch (IOException e) {
             e.printStackTrace();
         }
 

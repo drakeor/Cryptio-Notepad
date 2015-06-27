@@ -5,11 +5,13 @@
     <string name="action_settings">Parametres</string>
     <string name="password_hint">Mot de passe</string>
     <string name="login_button">Connexion</string>
-
-
     <string name="title_activity_new_blob">Creer blob</string>
     <string name="new_blob_password">Creez un mot de passe</string>
     <string name="new_blob_password_verify">Confirmez votre mot de passe</string>
     <string name="new_blob_submit">Continuer</string>
+
+    <string name="save_button">Enregistrer</string>
+    <string name="title_activity_notepad">Modifier</string>
+    <string name="hello_world">Hello world!</string>
 
 </resources>

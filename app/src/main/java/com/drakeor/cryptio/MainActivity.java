@@ -66,74 +66,33 @@ public class MainActivity extends ActionBarActivity {
 
         // Define some of our variables
         EditText passwordText = (EditText) findViewById(R.id.password_text);
-        String filename = getFilesDir() + "/cryptio.blob";
-        File file = new File(filename);
-        String salt_filename = getFilesDir() + "/cryptio_salt";
-        File salt_file = new File(salt_filename);
-
-        // Status element!
         TextView passwordStatus = (TextView) findViewById(R.id.passwordStatus);
+        EncryptionManager encryptionManager = new EncryptionManager(getFilesDir());
 
         try {
-
             // Grab our salt
-            FileInputStream saltFileStream = new FileInputStream(salt_file);
-            byte salt[] = new byte[(int)salt_filename.length()];
-            System.out.println(salt_filename.length());
-            saltFileStream.read(salt);
-            saltFileStream.close();
+            byte salt[] = encryptionManager.getSalt();
 
             // Mix in our password
             // Create our final password
-            byte[] passwordInBytes = passwordText.getText().toString().getBytes();
-            byte[] finalPassword = new byte[salt.length + passwordInBytes.length];
-            System.out.println(salt.length + passwordInBytes.length);
-            System.arraycopy(salt, 0, finalPassword, 0, salt.length);
-            System.arraycopy(passwordInBytes, 0, finalPassword, salt.length, passwordInBytes.length);
-            try {
-                MessageDigest md = MessageDigest.getInstance("SHA-256");
-                md.update(finalPassword);
-                byte[] finalPasswordHash = md.digest();
+            byte[] finalPasswordHash = encryptionManager.getPasswordHash(passwordText.getText().toString().getBytes());
 
-                //Byte to Hex (Courtesy of mkyong)
-                StringBuffer sb = new StringBuffer();
-                for (int i = 0; i < finalPasswordHash.length; i++) {
-                    sb.append(Integer.toString((finalPasswordHash[i] & 0xff) + 0x100, 16).substring(1));
-                }
+            // Retrieve the raw data of the file
+            File file = new File(encryptionManager.blobFilename);
+            FileInputStream fileInputStream = new FileInputStream(file);
+            byte[] bytes = new byte[(int)file.length()];
 
-                System.out.println("Hash Size: " + Integer.toString(finalPasswordHash.length));
-                System.out.println("Hex format : " + sb.toString());
+            // Grab the first 32 bytes of the file for comparison
+            BufferedInputStream bufferedInputStream = new BufferedInputStream(fileInputStream);
+            bufferedInputStream.read(bytes,0,32);
+            bufferedInputStream.close();
+            System.out.println("HASH: " + encryptionManager.byteToHex(bytes));
 
-                // Retrieve the raw data of the file
-                FileInputStream fileInputStream = new FileInputStream(file);
-                byte[] bytes = new byte[(int)file.length()];
-
-                // Grab the first 32 bytes of the file for comparison
-                BufferedInputStream bufferedInputStream = new BufferedInputStream(fileInputStream);
-                bufferedInputStream.read(bytes,0,32);
-                bufferedInputStream.close();
-
-                //Byte to Hex (Courtesy of mkyong)
-                StringBuffer sb2 = new StringBuffer();
-                for (int i = 0; i < bytes.length; i++) {
-                    sb2.append(Integer.toString((bytes[i] & 0xff) + 0x100, 16).substring(1));
-                }
-
-                System.out.println("Hash Size: " + Integer.toString(finalPasswordHash.length));
-                System.out.println("Hex format : " + sb2.toString());
-
-                // For now, just print the contents to console!
-                // TODO: Pass to an encryption/decryption class
-                String message = new String(bytes);
-                System.out.println(message);
-
-                if(Arrays.equals(bytes,finalPasswordHash)) {
-                    passwordStatus.setText("Your password was correct!");
-                } else {
-                    passwordStatus.setText("The password was incorrect!");
-                }
-            } catch(NoSuchAlgorithmException e) {
-                e.printStackTrace();
+            // Lets just compare the passwords
+            if(Arrays.equals(bytes, finalPasswordHash)) {
+                passwordStatus.setText("Your password was correct!");
+            } else {
+                passwordStatus.setText("The password was incorrect!");
             }
 
 

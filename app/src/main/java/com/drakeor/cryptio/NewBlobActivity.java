@@ -68,67 +68,25 @@ public class NewBlobActivity extends ActionBarActivity {
         // Get both of our passwords
         EditText password1 = (EditText) findViewById(R.id.password_create);
         EditText password2 = (EditText) findViewById(R.id.password_verify);
+        EncryptionManager encryptionManager = new EncryptionManager(getFilesDir());
 
         if(password1.getText().toString().equals(password2.getText().toString())) {
-
-            // Create our new encrypted file
-            String filename = getFilesDir() + "/cryptio.blob";
-            System.out.println(filename);
-            File file = new File(filename);
-
-            // Create our new salt file
-            String salt_filename = getFilesDir() + "/cryptio_salt";
-            File salt_file = new File(salt_filename);
-
             try {
-
                 // Generate a secure salt and write it into our salt file.
-                SecureRandom secureRandom = new SecureRandom();
-                byte salt2[] = secureRandom.generateSeed(16);
-                FileOutputStream saltFileStream = new FileOutputStream(salt_file, false);
-                saltFileStream.write(salt2);
-                saltFileStream.close();
-
-                // Reopen our salt
-                FileInputStream saltFileStream2 = new FileInputStream(salt_file);
-                byte salt[] = new byte[(int)salt_filename.length()];
-                System.out.println(salt_filename.length());
-                saltFileStream2.read(salt);
-                saltFileStream2.close();
+                encryptionManager.generateNewSaltFile();
+                byte[] salt = encryptionManager.getSalt();
 
                 // Create our final password
-                byte[] passwordInBytes = password1.getText().toString().getBytes();
-                byte[] finalPassword = new byte[salt.length + passwordInBytes.length];
-                System.out.println(salt.length + passwordInBytes.length);
-                System.arraycopy(salt, 0, finalPassword, 0, salt.length);
-                System.arraycopy(passwordInBytes, 0, finalPassword, salt.length, passwordInBytes.length);
+                byte[] finalPasswordHash = encryptionManager.getPasswordHash(password1.getText().toString().getBytes());
 
-                // Write into our file
-                try {
-                    MessageDigest md = MessageDigest.getInstance("SHA-256");
-                    md.update(finalPassword);
-                    byte[] finalPasswordHash = md.digest();
+                // Write the hash to the file
+                File file = new File(encryptionManager.blobFilename);
+                FileOutputStream fileOutputStream = new FileOutputStream(file, false);
+                fileOutputStream.write(finalPasswordHash,0,32);
+                fileOutputStream.close();
 
-                    //Byte to Hex (Courtesy of mkyong)
-                    StringBuffer sb = new StringBuffer();
-                    for (int i = 0; i < finalPasswordHash.length; i++) {
-                        sb.append(Integer.toString((finalPasswordHash[i] & 0xff) + 0x100, 16).substring(1));
-                    }
-
-                    System.out.println("Hash Size: " + Integer.toString(finalPasswordHash.length));
-                    System.out.println("Hex format : " + sb.toString());
-
-                    // Write the hash to the file
-                    FileOutputStream fileOutputStream = new FileOutputStream(file, false);
-                    fileOutputStream.write(finalPasswordHash,0,32);
-                    fileOutputStream.close();
-
-                    // End our activity
-                    finish();
-                } catch(NoSuchAlgorithmException e) {
-                    e.printStackTrace();
-                }
-
+                // End our activity
+                finish();
 
             // Handle errors
             } catch(FileNotFoundException e) {

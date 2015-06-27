@@ -3,7 +3,8 @@
     android:layout_height="match_parent" android:paddingLeft="@dimen/activity_horizontal_margin"
     android:paddingRight="@dimen/activity_horizontal_margin"
     android:paddingTop="@dimen/activity_vertical_margin"
-    android:paddingBottom="@dimen/activity_vertical_margin" tools:context=".MainActivity"
+    android:paddingBottom="@dimen/activity_vertical_margin"
+    tools:context="com.drakeor.cryptio.NewBlobActivity"
     android:background="@drawable/main_menu_selector">
 
     <LinearLayout
@@ -13,48 +14,40 @@
         android:layout_centerVertical="true"
         android:layout_centerHorizontal="true">
 
-        <ImageView
+        <EditText
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:id="@+id/imageView"
+            android:inputType="textPassword"
+            android:ems="10"
+            android:id="@+id/password_create"
             android:layout_gravity="center_horizontal"
-            android:background="@drawable/lock_icon" />
+            android:hint="@string/new_blob_password"
+            android:textColor="#ffffffff" />
 
-        <LinearLayout
-            android:orientation="horizontal"
+        <EditText
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_gravity="center_horizontal">
+            android:inputType="textPassword"
+            android:ems="10"
+            android:id="@+id/password_verify"
+            android:layout_gravity="center_horizontal"
+            android:hint="@string/new_blob_password_verify"
+            android:textColor="#ffffffff" />
 
-            <EditText
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:id="@+id/password_text"
-                android:hint="@string/password_hint"
-                android:inputType="textPassword"
-                android:textColor="#ffffffff"
-                android:textColorHint="#ffd7d6d5"
-                android:layout_weight="0.75" />
-
-            <Button
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:id="@+id/login_button"
-                android:text="@string/login_button"
-                android:layout_weight="0.25"
-                android:onClick="decryptBlobFile"
-                android:nestedScrollingEnabled="true"
-                android:textColor="#ff000000" />
-        </LinearLayout>
+        <Button
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/new_blob_submit"
+            android:id="@+id/button2"
+            android:layout_gravity="center_horizontal"
+            android:onClick="createNewAccount" />
 
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:textAppearance="?android:attr/textAppearanceMedium"
-            android:id="@+id/textView"
+            android:id="@+id/newBlobInfoText"
             android:layout_gravity="center_horizontal"
             android:textColor="#ffffffff" />
-
     </LinearLayout>
-
 </RelativeLayout>

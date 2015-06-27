@@ -1,4 +1,4 @@
-package com.drakeor.cryptio;
+package com.drakeor.cryptio_notepad;
 
 import android.content.Intent;
 import android.support.v7.app.ActionBarActivity;

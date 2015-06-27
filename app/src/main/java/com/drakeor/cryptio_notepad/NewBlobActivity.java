@@ -1,4 +1,4 @@
-package com.drakeor.cryptio;
+package com.drakeor.cryptio_notepad;
 
 import android.content.Intent;
 import android.support.v7.app.ActionBarActivity;
@@ -8,16 +8,6 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.EditText;
 import android.widget.TextView;
-
-import java.io.ByteArrayOutputStream;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
-import java.security.SecureRandom;
 
 
 public class NewBlobActivity extends ActionBarActivity {

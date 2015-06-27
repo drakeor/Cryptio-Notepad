@@ -1,4 +1,4 @@
-package com.drakeor.cryptio;
+package com.drakeor.cryptio_notepad;
 
 import android.app.Application;
 import android.test.ApplicationTestCase;
